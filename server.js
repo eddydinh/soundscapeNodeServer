@@ -7,6 +7,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(fileupload());
 app.use(cors());
+app.use(express.static('public'));
 const database = {
     markers: [
         {
@@ -37,10 +38,13 @@ app.listen(3000, ()=>{
 app.get('/', (req,res)=>{
     res.json(database.markers);
 })
+app.get('/database', (req,res)=>{
+    res.json(database.markers);
+})
 app.get('/:fileName',function(req,res,next){
     
   const options = {
-    root: __dirname + '/public/',
+    root: __dirname + '/public/files/',
     dotfiles: 'deny',
     headers: {
         'x-timestamp': Date.now(),
