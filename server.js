@@ -15,8 +15,8 @@ const database = {
             description : 'Description of the sound 1',
             lat: 49.87219002998007,
             lng: -119.48283236669567,
-            filename:`soundeffect1.mp3`,
-            filetype:'mp3'
+            filename:`soundeffect1.wav`,
+            filetype:'wav'
             
         },
         
@@ -25,8 +25,8 @@ const database = {
             description : 'Description of the sound 2',
             lat: 49.87022622111901,
             lng: -119.47962015357234,
-            filename:`soundeffect1.mp3`,
-            filetype:'mp3'
+            filename:`soundeffect1.wav`,
+            filetype:'wav'
             
         }
     ]
