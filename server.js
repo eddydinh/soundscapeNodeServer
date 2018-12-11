@@ -2,44 +2,38 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fileupload = require("express-fileupload");
 const cors = require('cors');
+const knex = require('knex')
+
+
+const db = knex({
+  client: 'pg',
+  connection: {
+    host : '127.0.0.1',
+    user : 'postgres',
+    password : 'digmed1!',
+    database : 'soundscape'
+  }
+});
+
+//db.select('*').from('markers').tjen(data => {
+//    console.log(data);
+//})
 const app = express();
+
 
 app.use(bodyParser.json());
 app.use(fileupload());
 app.use(cors());
 app.use(express.static('public'));
-const database = {
-    markers: [
-        {
-            title: 'Sound 1',
-            description : 'Description of the sound 1',
-            lat: 49.87219002998007,
-            lng: -119.48283236669567,
-            filename:`soundeffect1.wav`,
-            filetype:'wav'
-            
-        },
-        
-          {
-            title: 'Sound 2',
-            description : 'Description of the sound 2',
-            lat: 49.87022622111901,
-            lng: -119.47962015357234,
-            filename:`soundeffect1.wav`,
-            filetype:'wav'
-            
-        }
-    ]
-}
+
 app.listen(3000, ()=>{
     console.log('app is running on port 3000');
 })
 
-app.get('/', (req,res)=>{
-    res.json(database.markers);
-})
 app.get('/database', (req,res)=>{
-    res.json(database.markers);
+   db('markers').returning('*').select('*').then(response =>{
+       res.json(response);
+   }).catch(error=>res.status(400).json('Unable to fetch markers information'))
 })
 app.get('/:fileName',function(req,res,next){
     
@@ -76,7 +70,7 @@ app.post('/addmarker', (req,res)=>{
         }
         
     //DATABASE CODE GOES HERE
-        database.markers.push({
+        db('markers').insert({
         title: title,
         description: description,
         lat: lat,
@@ -84,7 +78,7 @@ app.post('/addmarker', (req,res)=>{
         filename:filename,
         filetype:filetype
     
-    })
+    }).then(console.log).catch(error=>res.status(400).json('Unable to add marker'));
     res.json('success');
 
     }) 
