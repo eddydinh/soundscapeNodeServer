@@ -8,10 +8,8 @@ const knex = require('knex')
 const db = knex({
   client: 'pg',
   connection: {
-    host : '127.0.0.1',
-    user : 'postgres',
-    password : 'digmed1!',
-    database : 'soundscape'
+    host : process.env.DATABASE_URL,
+    ssl: true
   }
 });
 
@@ -27,6 +25,7 @@ app.use(cors());
 app.use(express.static('public'));
 
 const PORT = process.env.PORT;
+
 app.listen(PORT || 3000, ()=>{
     console.log(`app is running on port ${PORT}`);
 })
