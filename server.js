@@ -26,8 +26,9 @@ app.use(fileupload());
 app.use(cors());
 app.use(express.static('public'));
 
-app.listen(3000, ()=>{
-    console.log('app is running on port 3000');
+const PORT = process.env.PORT;
+app.listen(PORT || 3000, ()=>{
+    console.log(`app is running on port ${PORT}`);
 })
 
 app.get('/database', (req,res)=>{
