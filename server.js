@@ -31,6 +31,9 @@ app.listen(PORT || 3000, ()=>{
     console.log(`app is running on port ${PORT}`);
 })
 
+app.get('/', (req,res)=>{
+    res.json('Connected successfully');
+})
 app.get('/database', (req,res)=>{
    db('markers').returning('*').select('*').then(response =>{
        res.json(response);
