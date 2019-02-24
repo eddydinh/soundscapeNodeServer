@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const fileupload = require("express-fileupload");
 const cors = require('cors');
 const knex = require('knex')
+const fs = require('fs');
 
 //DATABASE CONNECTION
 const db = knex({
