@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const fileupload = require("express-fileupload");
 const cors = require('cors');
 const knex = require('knex')
+const fs = require('fs');
 
 
 //db.select('*').from('markers').tjen(data => {
@@ -54,6 +55,7 @@ app.get('/:fileName', function (req, res, next) {
     };
     const fileName = req.params.fileName;
 
+
     res.sendFile(fileName, options, (err) => {
         if (err) {
             next(err);
@@ -61,38 +63,33 @@ app.get('/:fileName', function (req, res, next) {
             console.log('Sent: ', fileName);
         }
     })
+
 });
 
 app.post('/addmarker', (req, res) => {
-    const {
-        title,
-        description,
-        lat,
-        lng,
-        filetype,
-        filename
-    } = req.body;
 
-    if (!req.files) {
 
-        res.json("File Not Found!");
+
+    if (req.body.filename === 'none') {
+        
+        //DATABASE CODE GOES HERE
+        db('markers').insert(req.body).then(console.log).catch(error => res.status(400).json('Unable to add marker'));
+        res.json('success');
     } else {
+        const {
+            filename
+        } = req.body;
+        let hashname = Math.floor(Math.random() * 100) + 1 + filename;
+        let obj = req.body;
+        obj.filename = hashname;
         let uploadFile = req.files.file;
-        uploadFile.mv(`${__dirname}/public/files/${filename}`, (err) => {
+        uploadFile.mv(`${__dirname}/public/files/${hashname}`, (err) => {
             if (err) {
                 return res.status(500).send(err)
             }
 
             //DATABASE CODE GOES HERE
-            db('markers').insert({
-                title: title,
-                description: description,
-                lat: lat,
-                lng: lng,
-                filename: filename,
-                filetype: filetype
-
-            }).then(console.log).catch(error => res.status(400).json('Unable to add marker'));
+            db('markers').insert(obj).then(console.log).catch(error => res.status(400).json('Unable to add marker'));
             res.json('success');
 
         })
@@ -102,26 +99,64 @@ app.post('/addmarker', (req, res) => {
 app.post('/editmarker', (req, res) => {
 
     const {
-        id, filename
+        id,
+        filename
     } = req.body;
     const obj = req.body;
 
+
     if (req.files) {
         let uploadFile = req.files.file;
-        uploadFile.mv(`${__dirname}/public/files/${filename}`, (err) => {
+        let hashname = Math.floor(Math.random() * 100) + 1 + filename
+        obj.filename = hashname;
+
+        //DOWNLOAD EDIT MEDIA FILE
+        uploadFile.mv(`${__dirname}/public/files/${hashname}`, (err) => {
             if (err) {
                 return res.status(500).send(err)
             }
 
 
+            //GET CURRENT MEDIA FILE NAME
+            db('markers').where('id', id).returning('*').select('filename').then((result) => {
+
+
+                let currentfilename = result[0].filename;
+                console.log(currentfilename);
+
+                //DATABASE CODE GOES HERE
+                db('markers').where('id', id).update(
+                    obj).then(console.log).catch(error => res.status(400).json('Unable to add marker'));
+                res.json("edit success");
+
+                if (currentfilename !== 'none') {
+
+                    let filePath = `${__dirname}\\public\\files\\${currentfilename}`;
+
+                    fs.unlink(filePath, (error) => {
+                        if (error) {
+                            console.log(error);
+
+                        }
+
+                    });
+                }
+
+            });
+
+
+
 
         })
+    }else{
+         //DATABASE CODE GOES HERE
+                db('markers').where('id', id).update(
+                    obj).then(console.log).catch(error => res.status(400).json('Unable to add marker'));
+                res.json("edit success");
     }
+    
 
-    //DATABASE CODE GOES HERE
-    db('markers').where('id', id).update(
-        obj).then(console.log).catch(error => res.status(400).json('Unable to add marker'));
-    res.json("edit success");
+
 });
 
 
@@ -132,8 +167,39 @@ app.post('/deletemarker', (req, res) => {
 
 
 
-    //DATABASE CODE GOES HERE
-    db('markers').where('id', id).del().then(console.log).catch(error => res.status(400).json('Unable to delete marker'));
-    res.json('delete success');
+
+    //GET MEDIA FILE NAME
+    db('markers').where('id', id).returning('*').select('filename').then((result) => {
+        
+      
+
+        let currentfilename = result[0].filename;
+        
+       
+
+        //DATABASE CODE GOES HERE
+
+
+        db('markers').where('id', id).del().then(console.log).catch(error => res.status(400).json('Unable to delete marker')); // DELETE MARKER ROW IN DATABASE
+        
+        if (currentfilename !== 'none') {
+        
+        let filePath = `${__dirname}\\public\\files\\${currentfilename}`;
+
+        //DELTE FILE
+        fs.unlink(filePath, (err) => { 
+            if (err) {
+                console.log(err);
+            }
+        });
+            
+        }
+        
+           res.json('delete success');
+    });
+    
+    
+
+
 
 });
